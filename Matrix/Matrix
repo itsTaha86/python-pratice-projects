@@ -1,0 +1,45 @@
+
+
+def matrix_sum():
+
+    """
+    This function calculate the sum of matrix rows and columns numbers
+    """
+
+    print("Please enter your matrix (3x3):")
+    while True:
+        # Error Handling: To get just int values
+        try:
+            # matrix_x contains matrix x row
+            matrix_1 = list(map(int, input().split()))
+            matrix_2 = list(map(int, input().split()))
+            matrix_3 = list(map(int, input().split()))
+            break
+        except ValueError:
+            print("Please enter valid numbers.")
+            continue
+
+    # matrix_row_x contains sum of row x
+    matrix_row_1 = sum(matrix_1)
+    matrix_row_2 = sum(matrix_2)
+    matrix_row_3 = sum(matrix_3)
+
+    # matrix_column_x contains sum of column x
+    matrix_column_1 = sum([matrix_1[0], matrix_2[0], matrix_3[0]])
+    matrix_column_2 = sum([matrix_1[1], matrix_2[1], matrix_3[1]])
+    matrix_column_3 = sum([matrix_1[2], matrix_2[2], matrix_3[2]])
+
+    # Show the sums
+    print("Row sums:")
+    print(f"Row 1: {matrix_row_1}")
+    print(f"Row 2: {matrix_row_2}")
+    print(f"Row 3: {matrix_row_3}")
+    
+    print("Column sums:")
+    print(f"Column 1: {matrix_column_1}")
+    print(f"Column 2: {matrix_column_2}")
+    print(f"Column 3: {matrix_column_3}")
+
+# Run the program
+if __name__ == "__main__":
+    matrix_sum()
