@@ -1,0 +1,28 @@
+def get_sentence():
+
+    # The longest word variable which keeps updating while the program is running
+    longest_word = [""]
+
+    # Get the entry from user
+    words = list(input("Please enter your sentence: ").split())
+
+    for word in words:
+
+        # Filter the letters from numbers and symbols
+        clean_word = "".join(x for x in word if x.isalpha())
+
+        # Check and find the longest letter(s)
+        if len(clean_word) == len(longest_word[0]):
+            longest_word.append(clean_word)
+        elif len(clean_word) > len(longest_word[0]):
+            longest_word.clear()
+            longest_word.append(clean_word)
+
+    # Show the longest letters
+    result = " and ".join(longest_word)
+    print(f"The longest word(s): {result} ({len(longest_word[0])} letters.)")
+
+
+# Run the program
+if __name__ == "__main__":
+    get_sentence()
