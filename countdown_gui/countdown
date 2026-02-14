@@ -1,0 +1,194 @@
+# Imports and global variables
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import (
+    QApplication,
+    QWidget,
+    QMainWindow,
+    QSpinBox,
+    QHBoxLayout,
+    QVBoxLayout,
+    QLabel,
+    QPushButton,
+    QMessageBox,
+)
+from PySide6.QtMultimedia import QSoundEffect
+from PySide6.QtCore import QTimer, QUrl
+from PySide6.QtGui import QIcon
+
+from datetime import timedelta
+import sys
+import os
+
+
+reset_function_executed = (
+    False  # This variable controls the message-box for reset button
+)
+
+
+# Path
+base_path = os.path.dirname(__file__)
+icon_path = os.path.join(base_path, "assets\countdown_icon.png")
+sound_path = os.path.join(base_path, "assets\countdown_sound.wav")
+
+
+# GUI
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Timer")
+        self.setFixedSize(QSize(400, 300))
+        self.setWindowIcon(QIcon(icon_path))
+
+        self.sound = QSoundEffect()
+        self.sound.setSource(QUrl.fromLocalFile(sound_path))
+        self.sound.setVolume(0.5)
+
+        # Layouts
+        self.main_layout = QVBoxLayout()
+        self.count_layout = QHBoxLayout()
+        self.entry_layout = QHBoxLayout()
+        self.button_layout = QVBoxLayout()
+        self.main_layout.addLayout(self.count_layout)
+        self.main_layout.addLayout(self.entry_layout)
+        self.main_layout.addLayout(self.button_layout)
+
+        # Display
+        self.display = QLabel()
+        self.display.setStyleSheet("QLabel { font-size: 30pt; }")
+        self.display.setText("00:00:00")
+        self.display.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.count_layout.addWidget(self.display)
+
+        # Entries
+        self.hour_entry = QSpinBox()
+        self.hour_entry.setMinimum(00)
+        self.hour_entry.setMaximum(99)
+        self.entry_layout.addWidget(self.hour_entry)
+        self.hour_entry.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.minute_entry = QSpinBox()
+        self.minute_entry.setMinimum(00)
+        self.minute_entry.setMaximum(59)
+        self.entry_layout.addWidget(self.minute_entry)
+        self.minute_entry.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.second_entry = QSpinBox()
+        self.second_entry.setMinimum(00)
+        self.second_entry.setMaximum(59)
+        self.entry_layout.addWidget(self.second_entry)
+        self.second_entry.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Start Counter button
+        self.start_counter_button = QPushButton()
+        self.start_counter_button.clicked.connect(self.start_countdown)
+        self.start_counter_button.setText("Start")
+        self.button_layout.addWidget(self.start_counter_button)
+
+        # Stop Counter button
+        self.stop_counter_button = QPushButton()
+        self.stop_counter_button.clicked.connect(self.stop_countdown)
+        self.stop_counter_button.setText("Stop")
+        self.button_layout.addWidget(self.stop_counter_button)
+        self.stop_counter_button.setDisabled(True)
+
+        # Continue Counter button
+        self.continue_counter_button = QPushButton()
+        self.continue_counter_button.clicked.connect(self.continue_countdown)
+        self.continue_counter_button.setText("Continue")
+        self.button_layout.addWidget(self.continue_counter_button)
+        self.continue_counter_button.setDisabled(True)
+
+        # Reset button
+        self.reset_counter_button = QPushButton()
+        self.reset_counter_button.setText("Reset")
+        self.reset_counter_button.clicked.connect(self.reset_countdown)
+        self.button_layout.addWidget(self.reset_counter_button)
+        self.reset_counter_button.setDisabled(True)
+
+        # Set timer
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_counter)
+
+        # Remaining time
+        self.remaining = timedelta()
+
+        # Set the widgets
+        widget = QWidget()
+        widget.setLayout(self.main_layout)
+        self.setCentralWidget(widget)
+
+    def start_countdown(self):
+
+        global reset_function_executed
+        reset_function_executed = False
+
+        self.remaining = timedelta(
+            hours=self.hour_entry.value(),
+            minutes=self.minute_entry.value(),
+            seconds=self.second_entry.value(),
+        )
+        self.timer.start(1000)
+
+        self.start_counter_button.setDisabled(True)
+        self.stop_counter_button.setDisabled(False)
+        self.reset_counter_button.setDisabled(False)
+        self.continue_counter_button.setDisabled(True)
+
+    def stop_countdown(self):
+        self.timer.stop()
+        self.start_counter_button.setDisabled(False)
+        self.continue_counter_button.setDisabled(False)
+
+    def continue_countdown(self):
+        self.timer.start()
+        self.continue_counter_button.setDisabled(True)
+
+    def reset_countdown(self):
+        global reset_function_executed
+        self.remaining = timedelta(hours=0, minutes=0, seconds=0)
+        self.display.setText("00:00:00")
+        reset_function_executed = True
+        self.start_counter_button.setDisabled(False)
+        self.continue_counter_button.setDisabled(True)
+
+    def timer_ended(self):
+
+        global reset_function_executed
+
+        self.counter_message = QMessageBox()
+        self.counter_message.setWindowIcon(QIcon(icon_path))
+        self.counter_message.setWindowTitle("Times up")
+        self.counter_message.setText(
+            "     TIMES UP!        "
+        )  # It has Spaces as place-holder
+        self.counter_message.setStyleSheet("QLabel { font-size: 22pt; }")
+        if reset_function_executed == False:
+            self.sound.play()
+            self.start_counter_button.setDisabled(False)
+            self.stop_counter_button.setDisabled(True)
+            self.continue_counter_button.setDisabled(True)
+            self.counter_message.exec()
+
+    def update_counter(self):
+
+        global reset_function_executed
+
+        if self.remaining.total_seconds() > 0:
+            self.remaining -= timedelta(seconds=1)
+            self.display.setText(str(self.remaining))
+
+        else:
+            self.timer.stop()
+            self.timer_ended()
+
+    def counter(self):
+        pass
+
+
+# Run the application
+app = QApplication(sys.argv)
+window = MainWindow()
+window.show()
+if __name__ == "__main__":
+    app.exec()
