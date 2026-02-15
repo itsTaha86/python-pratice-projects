@@ -9,7 +9,7 @@ display_text = "Welcome to calculator!"
 
 # Setting the icon address
 base_path = os.path.dirname(__file__)
-icon_path = os.path.join(base_path, "calculator_icon.png")
+icon_path = os.path.join(base_path, "assets\calculator_icon.png")
 
 
 # UI
@@ -27,27 +27,36 @@ class Calculator:
     def __init__(self, window):
         self.window = window
 
-        self.main_frame = tk.Frame(window, bg="gray")
+        self.main_frame = tk.Frame(window, bg="#21252b")
         self.main_frame.grid(row=0, column=0, sticky="nsew")
 
         self.window.grid_rowconfigure(0, weight=1)
         self.window.grid_columnconfigure(0, weight=1)
 
-        self.top_frame = tk.Frame(self.main_frame, bg="red")
+        self.top_frame = tk.Frame(self.main_frame)
         self.top_frame.grid(row=0, column=0, pady=10, padx=6)
         self.top_frame.grid_columnconfigure(0, weight=1)
 
-        self.bottom_frame = tk.Frame(self.main_frame, bg="blue")
+        self.bottom_frame = tk.Frame(self.main_frame)
         self.bottom_frame.grid(row=1, column=0, padx=5, pady=5, sticky="news")
         self.top_frame.grid_columnconfigure(0, weight=1)
 
+        # Variables
+        self.cal_memory = None
+        self.last_operation = None
+
         # Buttons: (didn't used a loop to be able for customazation of buttons)
+        bg_color = "#333842"
+        bg_color_2 = "#2B2F38"
+        fg_color = "#ffffff"
         self.button_1 = tk.Button(
             self.bottom_frame,
             text="1",
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("1"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_1.grid(row=1, column=0, sticky="news")
 
@@ -57,6 +66,8 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("2"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_2.grid(row=1, column=1, sticky="news")
 
@@ -66,6 +77,8 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("3"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_3.grid(row=1, column=2, sticky="news")
 
@@ -75,6 +88,8 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("4"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_4.grid(row=2, column=0, sticky="news")
 
@@ -84,6 +99,8 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("5"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_5.grid(row=2, column=1, sticky="news")
 
@@ -93,6 +110,8 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("6"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_6.grid(row=2, column=2, sticky="news")
 
@@ -102,6 +121,8 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("7"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_7.grid(row=3, column=0, sticky="news")
 
@@ -111,6 +132,8 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("8"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_8.grid(row=3, column=1, sticky="news")
         self.button_9 = tk.Button(
@@ -119,6 +142,8 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("9"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_9.grid(row=3, column=2, sticky="news")
         self.button_dot = tk.Button(
@@ -127,6 +152,8 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("."),
+            bg=bg_color_2,
+            fg=fg_color,
         )
         self.button_dot.grid(row=4, column=0, sticky="news")
 
@@ -136,30 +163,75 @@ class Calculator:
             font=("Arial", 30),
             width=4,
             command=lambda: self.on_digit_click("0"),
+            bg=bg_color,
+            fg=fg_color,
         )
         self.button_0.grid(row=4, column=1, sticky="news")
 
         self.button_equal = tk.Button(
-            self.bottom_frame, text="=", font=("Arial", 30), width=4
+            self.bottom_frame,
+            text="=",
+            font=("Arial", 30),
+            width=4,
+            command=self.equal,
+            bg=bg_color_2,
+            fg=fg_color,
         )
-        self.button_equal.grid(row=4, column=2, sticky="news")
+        self.button_equal.grid(row=0, column=2, columnspan=2, sticky="news")
+
         self.button_plus = tk.Button(
-            self.bottom_frame, text="+", font=("Arial", 30)
+            self.bottom_frame,
+            text="+",
+            font=("Arial", 30),
+            command=lambda: self.plus(),
+            bg=bg_color_2,
+            fg=fg_color,
         ).grid(row=1, column=3, sticky="news")
+
         self.button_minus = tk.Button(
-            self.bottom_frame, text="-", font=("Arial", 30)
+            self.bottom_frame,
+            text="-",
+            font=("Arial", 30),
+            command=lambda: self.minus(),
+            bg=bg_color_2,
+            fg=fg_color,
         ).grid(row=2, column=3, sticky="news")
+
         self.button_multiply = tk.Button(
-            self.bottom_frame, text="x", font=("Arial", 30)
+            self.bottom_frame,
+            text="x",
+            font=("Arial", 30),
+            command=lambda: self.multiply(),
+            bg=bg_color_2,
+            fg=fg_color,
         ).grid(row=3, column=3, sticky="news")
+
         self.button_division = tk.Button(
-            self.bottom_frame, text="/", font=("Arial", 30)
+            self.bottom_frame,
+            text="/",
+            font=("Arial", 30),
+            command=lambda: self.division(),
+            bg=bg_color_2,
+            fg=fg_color,
         ).grid(row=4, column=3, sticky="news")
+
+        self.button_power = tk.Button(
+            self.bottom_frame,
+            text="^",
+            font=("Arial", 30),
+            width=4,
+            command=lambda: self.power_num(),
+            bg=bg_color_2,
+            fg=fg_color,
+        ).grid(row=4, column=2, sticky="news")
+
         self.button_clear = tk.Button(
-            self.bottom_frame, text="Del", font=("Arial", 30)
-        ).grid(row=0, column=2, columnspan=2, sticky="news")
-        self.button_delete = tk.Button(
-            self.bottom_frame, text="C", font=("Arial", 30), width=8
+            self.bottom_frame,
+            text="C",
+            font=("Arial", 30),
+            command=lambda: self.clear(),
+            bg=bg_color_2,
+            fg=fg_color,
         ).grid(row=0, column=0, columnspan=2, sticky="news")
 
         # Let the buttons to fit the frame
@@ -168,20 +240,23 @@ class Calculator:
         self.bottom_frame.grid_columnconfigure(2, weight=1)
         self.bottom_frame.grid_columnconfigure(3, weight=1)
 
-        self.cal_display = tk.Entry(self.top_frame, font=("Arial", 28))
+        self.cal_display = tk.Entry(
+            self.top_frame,
+            font=("Arial", 28),
+            readonlybackground="#464E5E",
+            fg="white",
+            insertbackground="black",
+        )
         self.cal_display.grid(row=0, column=0, ipadx=10, ipady=30, sticky="news")
         self.cal_display.insert(0, display_space + display_text)
         self.cal_display.config(state="readonly")
 
         # Logic
-        self.cal_memory = None
 
     def clear(self):
-        display_text = ""
-        self.cal_memory = None
-
-    def update_memory(self, entry):
-        self.cal_memory = entry
+        self.cal_display.config(state="normal")
+        self.cal_display.delete(0, tk.END)
+        self.cal_display.config(state="readonly")
 
     def on_digit_click(self, digit):
         self.cal_display.config(state="normal")
@@ -201,23 +276,64 @@ class Calculator:
 
         self.cal_display.config(state="readonly")
 
-    def plus(self, num):
-        return self.cal_memory + num
+    # This function gets second number for Operations
+    def get_operation(self):
+        operation_number = self.cal_display.get()
+        return operation_number
 
-    def minus(self, num):
-        return self.cal_memory - num
+    def plus(self):
+        self.cal_memory = self.cal_display.get()
+        self.clear()
+        self.last_operation = "+"
 
-    def multiply(self, num):
-        return self.cal_memory * num
+    def minus(self):
+        self.cal_memory = self.cal_display.get()
+        self.clear()
+        self.last_operation = "-"
 
-    def division(self, num):
-        return self.cal_memory / num
+    def multiply(self):
+        self.cal_memory = self.cal_display.get()
+        self.clear()
+        self.last_operation = "*"
 
-    def equal(self):
-        return self.cal_memory
+    def division(self):
+        self.cal_memory = self.cal_display.get()
+        self.clear()
+        self.last_operation = "/"
+
+    def power_num(self):
+        self.cal_memory = self.cal_display.get()
+        self.clear()
+        self.last_operation = "^"
 
     def delete_num(self):
-        pass
+        self.cal_memory = self.cal_display.get()
+        self.clear()
+        self.last_operation = "sqrt"
+
+    def equal(self):
+        self.cal_display.config(state="normal")
+        self.first_num = self.cal_memory
+        self.second_num = self.cal_display.get()
+        self.clear()
+
+        if self.last_operation == "+":
+            result = str(float(self.first_num) + float(self.second_num))
+        elif self.last_operation == "-":
+            result = str(float(self.first_num) - float(self.second_num))
+        elif self.last_operation == "*":
+            result = str(float(self.first_num) * float(self.second_num))
+        elif self.last_operation == "/":
+            if float(self.second_num) != 0:
+                result = str(float(self.first_num) / float(self.second_num))
+            else:
+                result = "Error"
+        elif self.last_operation == "^":
+            result = str(float(self.first_num) ** float(self.second_num))
+
+        self.cal_display.config(state="normal")
+        self.cal_display.insert(0, result)
+        self.cal_display.config(state="readonly")
 
 
 # Main Program
